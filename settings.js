@@ -7,4 +7,11 @@ settings.app = {
 	db: 'site.db'
 }
 
+settings.page = {
+  siteName: "RFL map",
+  description: "",
+  // nginxlocation: "/rfl-map/",
+  nginxlocation: "/"
+}
+
 module.exports = settings;
