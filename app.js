@@ -223,6 +223,17 @@ app.get('/', function(req, res) {
 		});
 });
 
+app.get('/map', function(req, res) {
+  if(req.user) {
+    res.render('map',{
+      user:req.user,
+		  opts:settings.page
+    });
+  } else {
+    res.redirect(settings.page.nginxlocation);
+  }
+});
+
 app.get('/admin/users', function(req, res) {
   if(req.user && req.user.permissions == "admin") {
     listUsers(function(result) {

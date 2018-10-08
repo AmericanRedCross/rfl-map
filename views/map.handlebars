@@ -1,0 +1,35 @@
+<div class="grid-x">
+<div class="cell">
+  
+<div id="rfl-map"></div>
+
+</div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script>
+
+
+var height = $(window).height();
+$('#rfl-map').height(height);
+$(window).resize(function(){
+  height = $(window).height();
+  $('#rfl-map').height(height);
+})
+
+// create basic leaflet map
+// ========================
+// tile layer for base map
+var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+  hotAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles from <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>',
+  hotLayer = L.tileLayer(hotUrl, {attribution: hotAttribution});
+// initialize map w options
+var map = L.map('rfl-map', {
+  layers: [hotLayer],
+  center: new L.LatLng(0,0),
+  zoom: 2,
+  minZoom: 2
+});
+
+</script>
