@@ -13,31 +13,6 @@
 <body>
 
 
-<div data-sticky-container>
-  <div class="title-bar" data-responsive-toggle="navigation-menu" data-hide-for="medium">
-    <button class="menu-icon" type="button" data-toggle></button>
-    <div class="title-bar-title">Menu</div>
-  </div>
-  <div class="top-bar custom-navigation__top-bar" id="navigation-menu" data-sticky data-options="marginTop:0;" style="width:100%">
-    <div class="top-left-bar">
-      <ul class="menu">
-      </ul>
-    </div>
-    <div class="top-bar-right">
-      <ul class="menu">
-        {{#if user}}
-        <li><a class="custom-navigation__link" href="/">Home</a></li>
-        <li><a class="custom-navigation__link" href="#">Nav</a></li>
-        {{#eq user.permissions "admin"}}
-          <li><a class="custom-navigation__link" href="/admin/users">Users</a></li>
-        {{/eq}}
-        {{/if}}
-      </ul>
-    </div>
-  </div>
-</div>
-
-<div class="hide-for-medium custom-navigation_spacer"></div>
 
   {{{body}}}
 
