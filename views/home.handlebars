@@ -1,15 +1,200 @@
-<div class="grid-x">
-<div class="cell small-6 small-offset-3 medium-4 medium-offset-4">
 {{#if user}}
-  <h5>Welcome <b>{{user.user}}</b>.</h5>
-  <p>You are logged in.</p>
-  <p>
-    <form class="navbar-form" action="{{opts.nginxlocation}}logout" method="POST" >
-      <button type="submit" value="submit" class="button">Log Out</button>
-    </form>
-  </p>
+
+<!-- Navigation -->
+<button id="menu-toggle" type="button" class="button secondary toggle"><i class="fa fa-bars"></i></button>
+<nav id="sidebar-wrapper">
+    <ul id="side-menu" class="sidebar-nav metismenu">
+        <button id="menu-close" type="button" class="button secondary toggle pull-right"><i class="fa fa-times"></i></button>
+        <li class="sidebar-brand">
+            <a href="#" >RFL</a>
+        </li>
+        <li class="second-level-sector">
+            <span>Layers</span>
+        </li>
+        <li>
+            <a href="#" id="layer-phoneservices" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; RFL phone services</a>
+        </li>
+        <li>
+            <a href="#" id="layer-icedetentionfacilities" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; ICE detention facilities</a>
+        </li>
+
+        <li style="border-top:1px solid #6d6e70;">
+          <form id="form-logout" style="display:none;" action="{{opts.nginxlocation}}logout" method="POST"></form>
+          <a href="#" onclick = document.getElementById('form-logout').submit(); >{{user.user}}
+            <span class="logout nav-float-right">Logout &nbsp;<i class="fa fa-sign-out"></i></span>
+          </a>
+        </li>
+        {{#eq user.permissions "admin"}}
+          <li>
+            <a href="{{opts.nginxlocation}}admin/users"><i class="fa fa-fw fa-user"></i> &nbsp; Manage users</a>
+          </li>
+        {{/eq}}
+    </ul>
+</nav>
+
+<div class="grid-x">
+<div class="cell">
+  
+<div id="rfl-map"></div>
+
+</div>
+</div>
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.css">
+<link rel="stylesheet" href="//unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+<script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.6.0/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.js"></script>
+<script src="{{opts.nginxlocation}}js/topojson.v2.min.js"></script>
+<script>
+
+var regions;
+
+var height = $(window).height();
+$('#rfl-map').height(height);
+$(window).resize(function(){
+  height = $(window).height();
+  $('#rfl-map').height(height);
+})
+
+// create basic leaflet map
+// ========================
+// tile layer for base map
+var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+  hotAttribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles from <a href="http://hot.openstreetmap.org/" target="_blank">H.O.T.</a>',
+  hotLayer = L.tileLayer(hotUrl, {attribution: hotAttribution});
+// initialize map w options
+var map = L.map('rfl-map', {
+  layers: [hotLayer],
+  center: new L.LatLng(30,-102),
+  zoom: 5,
+  minZoom: 4
+});
+
+L.svg().addTo(map);
+// pick up the SVG from the map object
+var svg = d3.select('#rfl-map').select('svg');
+var geoGroup = svg.append('g').attr('id', 'geo');
+var mapped;
+
+function projectPoint(x, y){
+  var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+  this.stream.point(point.x, point.y);
+}
+
+var transform = d3.geoTransform({point: projectPoint});
+var path = d3.geoPath().projection(transform);
+
+
+var phoneservices = L.featureGroup();
+map.addLayer(phoneservices);
+var detentionfacilities = L.featureGroup();
+map.addLayer(detentionfacilities);
+
+var phoneIcon = L.icon({
+  iconUrl: '{{opts.nginxlocation}}img/marker-phone.svg',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30] 
+  });
+var detentionIcon = L.icon({
+  iconUrl: '{{opts.nginxlocation}}img/marker-detention.svg',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30] 
+  });
+
+
+window.onload = function() {
+
+  d3.queue()
+    .defer(d3.json, '{{opts.nginxlocation}}data/regions.json')
+    .defer(d3.json, '{{opts.nginxlocation}}api/phoneservices')
+    .defer(d3.json, '{{opts.nginxlocation}}api/icedetentionfacilities')
+    .await(buildPage);
+}
+
+var buildPage = function(error, geo, phones, detentions) {
+
+  regions = topojson.feature(geo, geo.objects.regions).features;
+  
+  // Red Cross regions
+  mapped = geoGroup.selectAll("path")
+    .data(regions, function(d){ return d.properties.RCODE; })
+    .enter().append("path")
+    .attr("class", "region region__default")
+    .attr("d", path)
+    
+  // phone services         
+  for (var i = 0; i < phones.length; i++) {
+    var phone = L.marker([phones[i].lat, phones[i].lng], {icon: phoneIcon});
+    phone.bindPopup(phones[i].name)
+    phoneservices.addLayer(phone);
+  }
+  // ice detention facilities        
+  for (var i = 0; i < detentions.length; i++) {
+    var detention = L.marker([detentions[i].lat, detentions[i].lng], {icon: detentionIcon});
+    detention.bindPopup(detentions[i].name)
+    detentionfacilities.addLayer(detention);
+  }
+  
+    
+  updatePath = function(){ mapped.attr("d", path); }
+  map.on('zoom move viewreset', updatePath);
+  updatePath();
+  
+}
+
+function toggleLayer(toggle) {
+  var toggleId = $(toggle).attr('id');
+  console.log(toggle)
+  console.log(toggleId)
+  var changedLayer;
+  if(toggleId == "layer-phoneservices") {
+    changedLayer = phoneservices;
+    console.log('1')
+    console.log(changedLayer)
+  } else if (toggleId == "layer-icedetentionfacilities") {
+    changedLayer = detentionfacilities;
+    console.log('2')
+    console.log(changedLayer)
+  } else {
+    console.log("error")
+  }
+  
+  if($(toggle).hasClass('active')){
+    $(toggle).removeClass('active');
+    $(toggle).find('.fa').css('visibility','hidden')
+    map.removeLayer(changedLayer)
+  } else {
+    $(toggle).addClass('active');
+    $(toggle).find('.fa').css('visibility','visible')
+    map.addLayer(changedLayer)
+  }
+
+}
+
+// # closes the sidebar menu
+$("#menu-close").click(function(e) {
+    e.preventDefault();
+    $("#sidebar-wrapper").toggleClass("active");
+});
+// # opens the sidebar menu
+$("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#sidebar-wrapper").toggleClass("active");
+});
+// # creates the dropdowns in the sidebar menu
+$(function() {
+    $('#side-menu').metisMenu();
+});
+
+</script>
+
+
+
 {{else}}
 
+<div class="grid-x">
+  <div class="cell small-6 small-offset-3 medium-4 medium-offset-4">
   	<form action="{{opts.nginxlocation}}login" method="POST">
       <label> User
         <input type="text" name="user" id="login-user" placeholder="...">
@@ -18,9 +203,8 @@
         <input type="password" name="password" id="login-password" placeholder="...">
       </label>
       <button type="submit" value="submit" class="button">Log In</button>
-
   	</form>
+  </div>
+</div>
 
 {{/if}}
-</div>
-</div>
