@@ -106,15 +106,28 @@ var detentionIcon = L.icon({
 window.onload = function() {
 
   d3.queue()
+    .defer(d3.json, '{{opts.nginxlocation}}api/rfl')
     .defer(d3.json, '{{opts.nginxlocation}}data/regions.json')
     .defer(d3.json, '{{opts.nginxlocation}}api/phoneservices')
     .defer(d3.json, '{{opts.nginxlocation}}api/icedetentionfacilities')
     .await(buildPage);
 }
 
-var buildPage = function(error, geo, phones, detentions) {
-
+var buildPage = function(error, rfl, geo, phones, detentions) {
   regions = topojson.feature(geo, geo.objects.regions).features;
+  $(rfl).each(function(a, regionRfl) {
+    $(regions).each(function(b, regionGeo) {
+      if(regionGeo.properties.RCODE === regionRfl.region) {
+        regionGeo.properties["leads"] = regionRfl["leads"];
+        regionGeo.properties["case-volume"] = regionRfl["case-volume"];
+        regionGeo.properties["activity-volume"] = regionRfl["activity-volume"];
+        regionGeo.properties["top30"] = regionRfl["top30"];
+        regionGeo.properties["instructors"] = regionRfl["instructors"];
+        regionGeo.properties["mentors"] = regionRfl["mentors"];
+        regionGeo.properties["master-instructors"] = regionRfl["master-instructors"];
+      }
+    })
+  })
   
   // Red Cross regions
   mapped = geoGroup.selectAll("path")
@@ -145,17 +158,11 @@ var buildPage = function(error, geo, phones, detentions) {
 
 function toggleLayer(toggle) {
   var toggleId = $(toggle).attr('id');
-  console.log(toggle)
-  console.log(toggleId)
   var changedLayer;
   if(toggleId == "layer-phoneservices") {
     changedLayer = phoneservices;
-    console.log('1')
-    console.log(changedLayer)
   } else if (toggleId == "layer-icedetentionfacilities") {
     changedLayer = detentionfacilities;
-    console.log('2')
-    console.log(changedLayer)
   } else {
     console.log("error")
   }

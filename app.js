@@ -271,6 +271,25 @@ app.post('/admin/user', function(req, res) {
 // ###
 var api = express.Router();
 
+api.get('/rfl', function(req, res) {
+  if(req.user) {
+    var results = [];
+    fs.createReadStream('./data/rfl.csv')
+      .pipe(csv())
+      .on('data', function(data) {
+        try {
+          results.push(data);
+        }
+        catch(err) {
+          //error handler
+        }
+      })
+      .on('end',function(){
+        res.json(results);
+      });  
+  }
+});
+
 api.get('/phoneservices', function(req, res) {
   if(req.user) {
     var results = [];
