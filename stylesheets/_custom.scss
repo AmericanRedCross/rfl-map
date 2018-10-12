@@ -36,3 +36,14 @@
   width: 100%;
   z-index: 0;
 }
+#rfl-map svg path {
+  pointer-events: all;
+}
+.region__default {
+  cursor: pointer;
+  pointer-events: all;
+  stroke: rgba(16,20,18, 0.5);
+  stroke-width: 2px;
+  fill: rgba(16,20,18,0);
+  stroke-linecap: round;
+}

@@ -8,8 +8,11 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.6.0/d3.min.js"></script>
+<script src="{{opts.nginxlocation}}js/topojson.v2.min.js"></script>
 <script>
 
+var regions;
 
 var height = $(window).height();
 $('#rfl-map').height(height);
@@ -27,9 +30,81 @@ var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
 // initialize map w options
 var map = L.map('rfl-map', {
   layers: [hotLayer],
-  center: new L.LatLng(0,0),
-  zoom: 2,
-  minZoom: 2
+  center: new L.LatLng(30,-102),
+  zoom: 5,
+  minZoom: 4
 });
+
+L.svg().addTo(map);
+// pick up the SVG from the map object
+var svg = d3.select('#rfl-map').select('svg');
+var geoGroup = svg.append('g').attr('id', 'geo');
+var mapped;
+
+function projectPoint(x, y){
+  var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+  this.stream.point(point.x, point.y);
+}
+
+var transform = d3.geoTransform({point: projectPoint});
+var path = d3.geoPath().projection(transform);
+
+
+var phoneservices = L.featureGroup();
+map.addLayer(phoneservices);
+var detentionfacilities = L.featureGroup();
+map.addLayer(detentionfacilities);
+
+var phoneIcon = L.icon({
+  iconUrl: '{{opts.nginxlocation}}img/marker-phone.svg',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30] 
+  });
+var detentionIcon = L.icon({
+  iconUrl: '{{opts.nginxlocation}}img/marker-detention.svg',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30] 
+  });
+
+
+window.onload = function() {
+
+  d3.queue()
+    .defer(d3.json, '{{opts.nginxlocation}}data/regions.json')
+    .defer(d3.json, '{{opts.nginxlocation}}api/phoneservices')
+    .defer(d3.json, '{{opts.nginxlocation}}api/icedetentionfacilities')
+    .await(buildPage);
+}
+
+var buildPage = function(error, geo, phones, detentions) {
+
+  regions = topojson.feature(geo, geo.objects.regions).features;
+  
+  // Red Cross regions
+  mapped = geoGroup.selectAll("path")
+    .data(regions, function(d){ return d.properties.RCODE; })
+    .enter().append("path")
+    .attr("class", "region region__default")
+    .attr("d", path)
+    
+  // phone services         
+  for (var i = 0; i < phones.length; i++) {
+    var phone = L.marker([phones[i].lat, phones[i].lng], {icon: phoneIcon});
+    phone.bindPopup(phones[i].name)
+    phoneservices.addLayer(phone);
+  }
+  // ice detention facilities        
+  for (var i = 0; i < detentions.length; i++) {
+    var detention = L.marker([detentions[i].lat, detentions[i].lng], {icon: detentionIcon});
+    detention.bindPopup(detentions[i].name)
+    detentionfacilities.addLayer(detention);
+  }
+  
+    
+  updatePath = function(){ mapped.attr("d", path); }
+  map.on('zoom move viewreset', updatePath);
+  updatePath();
+  
+}
 
 </script>

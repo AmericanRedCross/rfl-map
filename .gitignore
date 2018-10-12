@@ -4,6 +4,8 @@ sessions
 public/fonts/*
 !public/fonts/README.md
 public/css/gulp.css
+data/*
+!data/README.md
 
 # OS generated files #
 ######################

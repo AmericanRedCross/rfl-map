@@ -1,5 +1,6 @@
 var settings = require('./settings.js');
 var fs = require('fs');
+var csv = require('csv-parser');
 var flow = require('flow');
 var path = require('path');
 var crypto = require('crypto');
@@ -265,6 +266,50 @@ app.post('/admin/user', function(req, res) {
     }
   } else { res.redirect(settings.page.nginxlocation + 'admin/users'); }
 });
+
+// API
+// ###
+var api = express.Router();
+
+api.get('/phoneservices', function(req, res) {
+  if(req.user) {
+    var results = [];
+    fs.createReadStream('./data/phoneservices.csv')
+      .pipe(csv())
+      .on('data', function(data) {
+        try {
+          results.push(data);
+        }
+        catch(err) {
+          //error handler
+        }
+      })
+      .on('end',function(){
+        res.json(results);
+      });  
+  }
+});
+
+api.get('/icedetentionfacilities', function(req, res) {
+  if(req.user) {
+    var results = [];
+    fs.createReadStream('./data/icedetentionfacilities.csv')
+      .pipe(csv())
+      .on('data', function(data) {
+        try {
+          results.push(data);
+        }
+        catch(err) {
+          //error handler
+        }
+      })
+      .on('end',function() {
+        res.json(results);
+      });  
+  }
+});
+
+app.use('/api', api);
 
 app.listen(settings.app.port, function() {
   console.log('app listening on port ' + settings.app.port);
