@@ -32,6 +32,23 @@
   height: 42px;
 }
 
+#tooltip {
+  position:absolute;
+  z-index:9999;
+  font-size:14px;
+  color: #1a1a1a;
+  background-color: rgba(245,245,245,1);
+  border-radius: 3px;
+  padding: 4px 6px;
+  max-width: 300px;
+}
+#tooltip:empty {
+  display:none;
+}
+#tooltip .region-name {
+  font-weight: bolder;
+}
+
 #rfl-map {
   width: 100%;
   z-index: 0;
@@ -46,6 +63,40 @@
   stroke-width: 2px;
   fill: rgba(16,20,18,0);
   stroke-linecap: round;
+}
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    
+}
+.info.legend:empty {
+  display:none;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+.legend {
+    line-height: 18px;
+    color: #555;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+.legend-max {
+  float:right;
+}
+.legend-min {
+  float:left;
 }
 
 /* Side Menu */

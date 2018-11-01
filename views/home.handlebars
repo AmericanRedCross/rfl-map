@@ -12,6 +12,26 @@
             <span>Layers</span>
         </li>
         <li>
+            <a href="#">RFL in the Regions <i class="fa nav-arrow nav-float-right"></i></a>
+            <ul class="second-level">
+                <li>
+                    <a href="#" id="region-leads" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Region Leads
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="region-top30" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Top 30
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="region-instructors" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Mentors & Instructors
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
             <a href="#" id="layer-phoneservices" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; RFL phone services</a>
         </li>
         <li>
@@ -31,6 +51,8 @@
         {{/eq}}
     </ul>
 </nav>
+
+<div id="tooltip"></div>
 
 <div class="grid-x">
 <div class="cell">
@@ -91,6 +113,15 @@ map.addLayer(phoneservices);
 var detentionfacilities = L.featureGroup();
 map.addLayer(detentionfacilities);
 
+var legend = L.control({position: 'bottomleft'});
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    return div;
+};
+
+legend.addTo(map);
+
 var phoneIcon = L.icon({
   iconUrl: '{{opts.nginxlocation}}img/marker-phone.svg',
   iconSize: [30, 30],
@@ -102,6 +133,22 @@ var detentionIcon = L.icon({
   iconAnchor: [15, 30] 
   });
 
+// handles tooltip text for mouse events on the d3 drawn regions
+function handleMouseover(d,i) {
+  var tooltipText = "<small><span class='region-name'>" + d.properties.Region + "</span><br>";
+  tooltipText += "case & activity rank: " + d.properties["top30"] + "<br>";
+  tooltipText += "activity volume: " + d.properties["activity-volume"] + "<br>";
+  tooltipText += "case volume: " + d.properties["case-volume"] + "<br>";
+  tooltipText += "leads: " + d.properties["leads"] + "<br>";
+  tooltipText += "instructors: " + d.properties["instructors"] + "<br>";
+  tooltipText += "master instructors: " + d.properties["master-instructors"] + "<br>";
+  tooltipText += "mentors: " + d.properties["mentors"] + "<br>"; 
+  tooltipText += "</small>";
+  $('#tooltip').html(tooltipText);
+}
+function handleMouseout() {
+  $('#tooltip').empty();
+}
 
 window.onload = function() {
 
@@ -118,13 +165,14 @@ var buildPage = function(error, rfl, geo, phones, detentions) {
   $(rfl).each(function(a, regionRfl) {
     $(regions).each(function(b, regionGeo) {
       if(regionGeo.properties.RCODE === regionRfl.region) {
-        regionGeo.properties["leads"] = regionRfl["leads"];
-        regionGeo.properties["case-volume"] = regionRfl["case-volume"];
-        regionGeo.properties["activity-volume"] = regionRfl["activity-volume"];
-        regionGeo.properties["top30"] = regionRfl["top30"];
-        regionGeo.properties["instructors"] = regionRfl["instructors"];
-        regionGeo.properties["mentors"] = regionRfl["mentors"];
-        regionGeo.properties["master-instructors"] = regionRfl["master-instructors"];
+        regionGeo.properties["leads"] = +regionRfl["leads"];
+        regionGeo.properties["case-volume"] = +regionRfl["case-volume"];
+        regionGeo.properties["activity-volume"] = +regionRfl["activity-volume"];
+        regionGeo.properties["top30"] = +regionRfl["top30"];
+        regionGeo.properties["instructors"] = +regionRfl["instructors"];
+        regionGeo.properties["mentors"] = +regionRfl["mentors"];
+        regionGeo.properties["master-instructors"] = +regionRfl["master-instructors"];
+        regionGeo.properties["instructors-and-mentors"] = +regionRfl["instructors"] + +regionRfl["mentors"] + +regionRfl["master-instructors"];
       }
     })
   })
@@ -135,6 +183,8 @@ var buildPage = function(error, rfl, geo, phones, detentions) {
     .enter().append("path")
     .attr("class", "region region__default")
     .attr("d", path)
+    .on("mouseover", handleMouseover)
+    .on("mouseout", handleMouseout)
     
   // phone services         
   for (var i = 0; i < phones.length; i++) {
@@ -153,6 +203,8 @@ var buildPage = function(error, rfl, geo, phones, detentions) {
   updatePath = function(){ mapped.attr("d", path); }
   map.on('zoom move viewreset', updatePath);
   updatePath();
+  
+  $("#region-top30").click();
   
 }
 
@@ -179,6 +231,82 @@ function toggleLayer(toggle) {
 
 }
 
+
+function toggleRegion(toggle) {
+  
+  var toggleId = $(toggle).attr('id');
+  var dataKey, legendTitle;
+  var myColorScale = ["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"];
+
+  $(".toggle__region-choropleth").find('.fa').css('visibility','hidden');
+
+
+  if(toggleId == "region-leads") {
+    dataKey = "leads";
+    legendTitle = "# of Region Leads";
+    // myColorScale = ["#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"];
+  } else if (toggleId == "region-top30") {
+    dataKey = "top30";
+    legendTitle = "Rank of top 30 Regions by case & activity volume";
+    myColorScale = myColorScale.reverse();
+    // myColorScale = ["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"];
+  } else if (toggleId == "region-instructors") {
+    dataKey = "instructors-and-mentors";
+    legendTitle = "Total # of Instructors, Master Instructors, and Mentors";
+  } else {
+    console.log("error")
+  }
+  
+  if($(toggle).hasClass('active')){
+    
+    $(toggle).removeClass('active');
+    $(toggle).find('.fa').css('visibility','hidden');
+    
+    d3.select(".info.legend").html('');
+    
+    mapped.each(function(d,i) {
+      d3.select(this)
+        .style("fill", function(d){ return null; });
+    });
+    
+  } else {
+    
+    $(toggle).addClass('active');
+    $(toggle).find('.fa').css('visibility','visible');
+    
+    regionRange = [
+      d3.min(d3.values(regions), function(d) { console.log(d.properties[dataKey]); return d.properties[dataKey]; }),
+      d3.max(d3.values(regions), function(d) { return d.properties[dataKey]; })  
+    ]
+    if(dataKey == "top30") { regionRange[0] = 1; }
+    // color scale
+    quantize = d3.scaleQuantize().domain([regionRange[0], regionRange[1]]).range(myColorScale);
+    // change the label in the lower left
+    d3.select(".info.legend").style("max-width", "225px");
+    var legendHtml ="<div class='legend-title'>" + legendTitle + "</div><div class='legend-color'>";
+    var spanWidth = 200 / myColorScale.length; 
+    for(var i=0;i<myColorScale.length;i++) {
+      legendHtml += '<span style="display:inline-block;height:10px;width:' + spanWidth + 'px;background-color:' + myColorScale[i] + '"></span>'
+    }
+    legendHtml += "</div>"
+    legendHtml += "<div><div class='legend-min'>" + regionRange[0] + "</div><div class='legend-max'>" + regionRange[1] + "</div></div>"
+    d3.select(".info.legend").html(legendHtml);
+
+    mapped.each(function(d,i) {
+      if(d.properties[dataKey] !== null && d.properties[dataKey] > 0) {
+        d3.select(this).style("fill", function(d){
+          return quantize(d.properties[dataKey]);
+        });
+      } else {
+        d3.select(this)
+          .style("fill", function(d){ return null; });
+      }
+    });
+    
+  }
+  
+}
+
 // # closes the sidebar menu
 $("#menu-close").click(function(e) {
     e.preventDefault();
@@ -192,6 +320,18 @@ $("#menu-toggle").click(function(e) {
 // # creates the dropdowns in the sidebar menu
 $(function() {
     $('#side-menu').metisMenu();
+});
+
+// tooltip follows cursor
+$(document).ready(function() {
+  $('body').mouseover(function(e) {
+    //Set the X and Y axis of the tooltip
+    $('#tooltip').css('top', e.pageY + 10 );
+    $('#tooltip').css('left', e.pageX + 20 );
+  }).mousemove(function(e) {
+    //Keep changing the X and Y axis for the tooltip, thus, the tooltip move along with the mouse
+    $("#tooltip").css({top:(e.pageY+15)+"px",left:(e.pageX+20)+"px"});
+  });
 });
 
 </script>
