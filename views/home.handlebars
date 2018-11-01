@@ -275,7 +275,7 @@ function toggleRegion(toggle) {
     $(toggle).find('.fa').css('visibility','visible');
     
     regionRange = [
-      d3.min(d3.values(regions), function(d) { console.log(d.properties[dataKey]); return d.properties[dataKey]; }),
+      d3.min(d3.values(regions), function(d) { return d.properties[dataKey]; }),
       d3.max(d3.values(regions), function(d) { return d.properties[dataKey]; })  
     ]
     if(dataKey == "top30") { regionRange[0] = 1; }

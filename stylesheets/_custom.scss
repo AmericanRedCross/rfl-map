@@ -62,7 +62,11 @@
   stroke: rgba(16,20,18, 0.5);
   stroke-width: 2px;
   fill: rgba(16,20,18,0);
+  fill-opacity: 0.65;
   stroke-linecap: round;
+}
+.legend-color span {
+  opacity: 0.65;
 }
 
 .info {
