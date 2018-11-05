@@ -2,7 +2,7 @@
 
 <!-- Navigation -->
 <button id="menu-toggle" type="button" class="button secondary toggle"><i class="fa fa-bars"></i></button>
-<nav id="sidebar-wrapper">
+<nav id="sidebar-wrapper" class="active">
     <ul id="side-menu" class="sidebar-nav metismenu">
         <button id="menu-close" type="button" class="button secondary toggle pull-right"><i class="fa fa-times"></i></button>
         <li class="sidebar-brand">
@@ -33,6 +33,9 @@
         </li>
         <li>
             <a href="#" id="layer-phoneservices" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; RFL phone services</a>
+        </li>
+        <li>
+            <a href="#" id="layer-orraffiliates" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; ORR affiliates</a>
         </li>
         <li>
             <a href="#" id="layer-icedetentionfacilities" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; ICE detention facilities</a>
@@ -88,8 +91,8 @@ var hotUrl = 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
 // initialize map w options
 var map = L.map('rfl-map', {
   layers: [hotLayer],
-  center: new L.LatLng(30,-102),
-  zoom: 5,
+  center: new L.LatLng(30.587,-100.837),
+  zoom: 6,
   minZoom: 4
 });
 
@@ -112,6 +115,8 @@ var phoneservices = L.featureGroup();
 map.addLayer(phoneservices);
 var detentionfacilities = L.featureGroup();
 map.addLayer(detentionfacilities);
+var orraffiliates = L.featureGroup();
+map.addLayer(orraffiliates);
 
 var legend = L.control({position: 'bottomleft'});
 
@@ -132,17 +137,23 @@ var detentionIcon = L.icon({
   iconSize: [30, 30],
   iconAnchor: [15, 30] 
   });
+var affiliateIcon = L.icon({
+  iconUrl: '{{opts.nginxlocation}}img/marker-affiliate.svg',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30] 
+  });
 
 // handles tooltip text for mouse events on the d3 drawn regions
 function handleMouseover(d,i) {
   var tooltipText = "<small><span class='region-name'>" + d.properties.Region + "</span><br>";
-  tooltipText += "case & activity rank: " + d.properties["top30"] + "<br>";
-  tooltipText += "activity volume: " + d.properties["activity-volume"] + "<br>";
-  tooltipText += "case volume: " + d.properties["case-volume"] + "<br>";
-  tooltipText += "leads: " + d.properties["leads"] + "<br>";
-  tooltipText += "instructors: " + d.properties["instructors"] + "<br>";
-  tooltipText += "master instructors: " + d.properties["master-instructors"] + "<br>";
-  tooltipText += "mentors: " + d.properties["mentors"] + "<br>"; 
+  tooltipText += "Case & activity rank: " + d.properties["top30"] + "<br>";
+  tooltipText += "&nbsp; &nbsp; Activity volume: " + d.properties["activity-volume"] + "<br>";
+  tooltipText += "&nbsp; &nbsp; Case volume: " + d.properties["case-volume"] + "<br>";
+  tooltipText += "Total instructors & mentors: " + d.properties["instructors-and-mentors"] + "<br>";
+  tooltipText += "&nbsp; &nbsp; Instructors: " + d.properties["instructors"] + "<br>";
+  tooltipText += "&nbsp; &nbsp; Master instructors: " + d.properties["master-instructors"] + "<br>";
+  tooltipText += "&nbsp; &nbsp; Mentors: " + d.properties["mentors"] + "<br>";
+  tooltipText += "Leads: " + d.properties["leads"] + "<br>";
   tooltipText += "</small>";
   $('#tooltip').html(tooltipText);
 }
@@ -157,10 +168,11 @@ window.onload = function() {
     .defer(d3.json, '{{opts.nginxlocation}}data/regions.json')
     .defer(d3.json, '{{opts.nginxlocation}}api/phoneservices')
     .defer(d3.json, '{{opts.nginxlocation}}api/icedetentionfacilities')
+    .defer(d3.csv, '{{opts.nginxlocation}}data/orr-affiliates.csv')
     .await(buildPage);
 }
 
-var buildPage = function(error, rfl, geo, phones, detentions) {
+var buildPage = function(error, rfl, geo, phones, detentions, affiliates) {
   regions = topojson.feature(geo, geo.objects.regions).features;
   $(rfl).each(function(a, regionRfl) {
     $(regions).each(function(b, regionGeo) {
@@ -198,7 +210,14 @@ var buildPage = function(error, rfl, geo, phones, detentions) {
     detention.bindPopup(detentions[i].name)
     detentionfacilities.addLayer(detention);
   }
-  
+  // orr affiliate        
+  for (var i = 0; i < affiliates.length; i++) {
+    var affiliate = L.marker([affiliates[i].lat, affiliates[i].lng], {icon: affiliateIcon});
+    var affiliatePopup = "<b>" + affiliates[i].name + "</b><br>" +
+     "<small>" + affiliates[i].addr + ", " + affiliates[i].city + ", " + affiliates[i].state + "<br>" + affiliates[i].phn + "</small>";
+    affiliate.bindPopup(affiliatePopup)
+    orraffiliates.addLayer(affiliate);
+  }
     
   updatePath = function(){ mapped.attr("d", path); }
   map.on('zoom move viewreset', updatePath);
@@ -215,6 +234,8 @@ function toggleLayer(toggle) {
     changedLayer = phoneservices;
   } else if (toggleId == "layer-icedetentionfacilities") {
     changedLayer = detentionfacilities;
+  } else if (toggleId == "layer-orraffiliates") {
+    changedLayer = orraffiliates;
   } else {
     console.log("error")
   }
@@ -235,8 +256,7 @@ function toggleLayer(toggle) {
 function toggleRegion(toggle) {
   
   var toggleId = $(toggle).attr('id');
-  var dataKey, legendTitle;
-  var myColorScale = ["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"];
+  var dataKey, legendTitle, myColorScale;
 
   $(".toggle__region-choropleth").find('.fa').css('visibility','hidden');
 
@@ -244,15 +264,17 @@ function toggleRegion(toggle) {
   if(toggleId == "region-leads") {
     dataKey = "leads";
     legendTitle = "# of Region Leads";
-    // myColorScale = ["#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"];
+    myColorScale = ["#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#084594"]
   } else if (toggleId == "region-top30") {
     dataKey = "top30";
     legendTitle = "Rank of top 30 Regions by case & activity volume";
+    myColorScale = ["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"];
     myColorScale = myColorScale.reverse();
     // myColorScale = ["#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"];
   } else if (toggleId == "region-instructors") {
     dataKey = "instructors-and-mentors";
     legendTitle = "Total # of Instructors, Master Instructors, and Mentors";
+    myColorScale = ["#d4b9da","#c994c7","#df65b0","#e7298a","#ce1256","#91003f"]
   } else {
     console.log("error")
   }
@@ -270,7 +292,7 @@ function toggleRegion(toggle) {
     });
     
   } else {
-    
+    $('.toggle__region-choropleth').removeClass('active');
     $(toggle).addClass('active');
     $(toggle).find('.fa').css('visibility','visible');
     
@@ -278,7 +300,7 @@ function toggleRegion(toggle) {
       d3.min(d3.values(regions), function(d) { return d.properties[dataKey]; }),
       d3.max(d3.values(regions), function(d) { return d.properties[dataKey]; })  
     ]
-    if(dataKey == "top30") { regionRange[0] = 1; }
+    if(regionRange[0] == 0) { regionRange[0] = 1; }
     // color scale
     quantize = d3.scaleQuantize().domain([regionRange[0], regionRange[1]]).range(myColorScale);
     // change the label in the lower left
