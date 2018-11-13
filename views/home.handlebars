@@ -8,28 +8,28 @@
         <li class="sidebar-brand">
             <a href="#" >RFL</a>
         </li>
-        <li class="second-level-sector">
-            <span>Layers</span>
+        <li class="second-level-sector" style="border-top:1px solid #6d6e70;">
+            <span>RFL in the Regions</span>
+        </li>
+        
+        <li>
+            <a href="#" id="region-leads" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+              <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Region Leads
+            </a>
         </li>
         <li>
-            <a href="#">RFL in the Regions <i class="fa nav-arrow nav-float-right"></i></a>
-            <ul class="second-level">
-                <li>
-                    <a href="#" id="region-leads" class="toggle__region-choropleth" onclick = toggleRegion(this); >
-                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Region Leads
-                    </a>
-                </li>
-                <li>
-                    <a href="#" id="region-top30" class="toggle__region-choropleth" onclick = toggleRegion(this); >
-                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Top 30
-                    </a>
-                </li>
-                <li>
-                    <a href="#" id="region-instructors" class="toggle__region-choropleth" onclick = toggleRegion(this); >
-                      <i class="fa fa-map-o" style="visibility:hidden;" aria-hidden="true"></i> &nbsp; Mentors & Instructors
-                    </a>
-                </li>
-            </ul>
+            <a href="#" id="region-top30" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+              <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Top 30
+            </a>
+        </li>
+        <li>
+            <a href="#" id="region-instructors" class="toggle__region-choropleth" onclick = toggleRegion(this); >
+              <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Mentors & Instructors
+            </a>
+        </li>
+
+        <li class="second-level-sector" style="border-top:1px solid #6d6e70;">
+            <span>Location Layers</span>
         </li>
         <li>
             <a href="#" id="layer-phoneservices" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; RFL phone services</a>
@@ -40,6 +40,86 @@
         <li>
             <a href="#" id="layer-icedetentionfacilities" class="active" onclick = toggleLayer(this); ><i class="fa fa-fw fa-map-marker"></i> &nbsp; ICE detention facilities</a>
         </li>
+        
+        <li class="second-level-sector" style="border-top:1px solid #6d6e70;">
+            <span>Foreign-born Populations</span>
+        </li>
+        <li>
+            <a href="#" id="layer__foreign" class="" onclick = toggleForeign(this); ><i class="fa fa-fw fa-map-marker" style="visibility:hidden;" ></i> &nbsp; Census tracts</a>
+        </li>
+        
+        <li>
+            <a href="#">Set countries of origin <i class="fa nav-arrow nav-float-right"></i></a>
+            <ul class="second-level">
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_CentralAm" class="toggle__foreign active" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o"></i> &nbsp; Central America
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_SouthAmer" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; South America
+                    </a>
+                </li>
+                <li style="border-top:1px solid #6d6e70;">
+                    <a href="#" data-foreign="Americas_LatinAmerica_Central_1" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Mexico
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_Central_4" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; El Salvador
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_Central_5" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Guatemala
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_Central_6" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Honduras
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreign="Americas_LatinAmerica_Central_10" class="toggle__foreign" onclick = toggleForeign(this); >
+                      <i class="fa fa-map-o" style="visibility:hidden;"></i> &nbsp; Venezuela
+                    </a>
+                </li>
+            </ul>
+        </li>
+        
+        <li>
+            <a href="#">Set threshold <i class="fa nav-arrow nav-float-right"></i></a>
+            <ul class="second-level">
+                <li>
+                    <a href="#" data-foreignThreshold="250" class="toggle__foreignThreshold" onclick = toggleForeignThreshold(this); >
+                      <i class="fa fa-check" style="visibility:hidden;"></i> &nbsp; >250
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreignThreshold="500" class="toggle__foreignThreshold" onclick = toggleForeignThreshold(this); >
+                      <i class="fa fa-check" style="visibility:hidden;"></i> &nbsp; >500
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreignThreshold="1000" class="toggle__foreignThreshold" onclick = toggleForeignThreshold(this); >
+                      <i class="fa fa-check" style="visibility:hidden;"></i> &nbsp; >1,000
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreignThreshold="2500" class="toggle__foreignThreshold active" onclick = toggleForeignThreshold(this); >
+                      <i class="fa fa-check" style=""></i> &nbsp; >2,500
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-foreignThreshold="5000" class="toggle__foreignThreshold" onclick = toggleForeignThreshold(this); >
+                      <i class="fa fa-check" style="visibility:hidden;"></i> &nbsp; >5,000
+                    </a>
+                </li>
+            </ul>
+        </li>
+        
 
         <li style="border-top:1px solid #6d6e70;">
           <form id="form-logout" style="display:none;" action="{{opts.nginxlocation}}logout" method="POST"></form>
@@ -68,12 +148,15 @@
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.css">
 <link rel="stylesheet" href="//unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
 <script src="//unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="//unpkg.com/esri-leaflet/dist/esri-leaflet.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.6.0/d3.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/metisMenu/2.6.2/metisMenu.min.js"></script>
 <script src="{{opts.nginxlocation}}js/topojson.v2.min.js"></script>
 <script>
 
-var regions;
+var regions, tracts;
+
+var commas = d3.format(",");
 
 var height = $(window).height();
 $('#rfl-map').height(height);
@@ -119,13 +202,13 @@ var orraffiliates = L.featureGroup();
 map.addLayer(orraffiliates);
 
 var legend = L.control({position: 'bottomleft'});
-
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML = "<div id='legend__choropleth' class='clearfix'></div> <div id='legend__foreign'></div>"
     return div;
 };
-
 legend.addTo(map);
+
 
 var phoneIcon = L.icon({
   iconUrl: '{{opts.nginxlocation}}img/marker-phone.svg',
@@ -252,6 +335,90 @@ function toggleLayer(toggle) {
 
 }
 
+function toggleForeign(toggle) {
+  
+  if($(toggle).hasClass('active')){    
+    $(toggle).removeClass('active');
+    $(toggle).find('.fa').css('visibility','hidden');  
+  } else { 
+    $(toggle).addClass('active');
+    $(toggle).find('.fa').css('visibility','visible');
+  }
+  
+  drawForeign();
+}
+
+function toggleForeignThreshold(toggle) {
+  
+  $(".toggle__foreignThreshold").each(function(i, item){
+    $(item).removeClass('active');
+    $(item).find('.fa').css('visibility','hidden');
+  })
+  $(toggle).addClass('active');
+  $(toggle).find('.fa').css('visibility','visible');
+  
+  drawForeign();
+}
+
+
+function drawForeign() {
+  
+  if(map.hasLayer(tracts)) {
+    map.removeLayer(tracts);
+  }
+  d3.select("#legend__foreign").html('');
+  
+  if($("#layer__foreign").hasClass('active')){
+    
+    var thresholdValue;
+    var placesKeys = [];
+    var placesText = [];
+    
+    var popupTemplate = "<b>{Geography}</b><br>"; 
+    $(".toggle__foreign").each(function(i, item){
+      if($(item).hasClass('active')) {
+        placesKeys.push($(item).attr('data-foreign'));
+        placesText.push($(item).text().trim());
+        popupTemplate += $(item).text().trim() + ": {" + $(item).attr('data-foreign') + "} <br>";
+      }
+    })
+    
+    $(".toggle__foreignThreshold").each(function(i, item){
+      if($(item).hasClass('active')) {
+        thresholdValue = $(item).attr('data-foreignThreshold');
+      }
+    })
+    
+    var query = placesKeys.join(" > " + thresholdValue + " OR ") + " > " + thresholdValue;
+    
+    var tractColor = "#888"
+    tracts = L.esri.featureLayer({
+      url: "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/RFL_Place_of_Birth_by_Tract/FeatureServer/0",
+      style: function () {
+        return { color: tractColor, weight: 2 };
+      },
+      where: query
+    }).addTo(map);
+    
+    // change the label in the lower right
+    d3.select("#legend__foreign").style("max-width", "225px");
+    var legendHtml = "<div>";
+    legendHtml += '<span style="display:inline-block;height:10px;width:10px;opacity:0.2;border-radius:1px;border:1px solid #000;background-color:' + tractColor + '"></span> &nbsp; ';
+    legendHtml+= placesText.join(" OR ") + " > " + commas(thresholdValue) + " persons" + "</div>";
+    d3.select("#legend__foreign").html(legendHtml);
+    
+    tracts.bindPopup(function(e){
+      return L.Util.template(popupTemplate, e.feature.properties)
+    });
+    
+  } else {
+    
+  }
+  
+  
+  
+}
+
 
 function toggleRegion(toggle) {
   
@@ -284,7 +451,7 @@ function toggleRegion(toggle) {
     $(toggle).removeClass('active');
     $(toggle).find('.fa').css('visibility','hidden');
     
-    d3.select(".info.legend").html('');
+    d3.select("#legend__choropleth").html('');
     
     mapped.each(function(d,i) {
       d3.select(this)
@@ -304,7 +471,7 @@ function toggleRegion(toggle) {
     // color scale
     quantize = d3.scaleQuantize().domain([regionRange[0], regionRange[1]]).range(myColorScale);
     // change the label in the lower left
-    d3.select(".info.legend").style("max-width", "225px");
+    d3.select("#legend__choropleth").style("max-width", "225px");
     var legendHtml ="<div class='legend-title'>" + legendTitle + "</div><div class='legend-color'>";
     var spanWidth = 200 / myColorScale.length; 
     for(var i=0;i<myColorScale.length;i++) {
@@ -312,7 +479,7 @@ function toggleRegion(toggle) {
     }
     legendHtml += "</div>"
     legendHtml += "<div><div class='legend-min'>" + regionRange[0] + "</div><div class='legend-max'>" + regionRange[1] + "</div></div>"
-    d3.select(".info.legend").html(legendHtml);
+    d3.select("#legend__choropleth").html(legendHtml);
 
     mapped.each(function(d,i) {
       if(d.properties[dataKey] !== null && d.properties[dataKey] > 0) {

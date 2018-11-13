@@ -14,6 +14,11 @@
   }
 }
 
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
 .custom-navigation__top-bar {
   padding: 0;
 }
@@ -81,10 +86,15 @@
 .info.legend:empty {
   display:none;
 }
-.info h4 {
-    margin: 0 0 5px;
-    color: #777;
+#legend__foreign {
+  padding-top: 6px;
+  margin-top: 6px;
+  border-top: 1px solid #888888;
 }
+#legend__foreign:empty {
+  display:none;
+}
+
 .legend {
     line-height: 18px;
     color: #555;
